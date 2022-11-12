@@ -58,7 +58,7 @@ WHERE Major = 'CS' AND EXISTS (
     WHERE Snum = s.Snum AND EXISTS (
 		SELECT Name
 		FROM Class
-		WHERE e.ClassName = 'IT3292E Database 20221' AND Semester = '20221'
+		WHERE e.ClassName = 'IT3292E Database' AND Semester = '20221'
 	)
 );
 
@@ -112,12 +112,22 @@ WHERE f.Name = 'Prof. Nguyen' AND f.Dept = 'Computer Science';
 -- 4.  Find the (Snum, Name) of all pairs of students who are enrolled in some class together.
 SELECT DISTINCT s1.Snum AS snum1, s1.Name AS name1, s2.Snum AS snum2, s2.Name AS name2
 FROM Enrolled e1, Enrolled e2, Student s1, Student s2
-WHERE e1.ClassName = e2.ClassName AND e1.Snum != e2.Snum
+WHERE e1.ClassName = e2.ClassName AND e1.Snum > e2.Snum
 AND s1.Snum = e1.Snum AND s2.Snum = e2.Snum
 GROUP BY s1.Snum, s1.Name, s2.Snum, s2.Name
+ORDER BY s1.Snum
 
--- 5.  Find the students (Snum, Name), who are enrolled in two classes that meet at the same time, and names of these two classes  
--- Kq đúng, nhưng thiếu tên của 2 lớp
+-- 5.  Find the students (Snum, Name), who are enrolled in two classes that meet at the same time, and names of these two classes
+SELECT s.Snum, s.Name, c1.Name, c2.Name
+FROM Student s, Enrolled e1, Enrolled e2, Class c1, Class c2
+WHERE e1.Snum = e2.Snum AND e1.ClassName > e2.ClassName
+AND e1.ClassName = c1.Name AND e2.ClassName = c2.Name
+AND c1.StartTime = c2.StartTime
+AND s.Snum = e1.Snum
+GROUP BY s.Snum, s.Name, c1.Name, c2.Name
+ORDER BY s.snum;
+
+-- Chỉ lấy tên
 SELECT s.Snum, s.Name
 FROM Student s
 WHERE Exists (
@@ -128,16 +138,6 @@ WHERE Exists (
 	AND c1.StartTime = c2.StartTime
 	AND s.Snum = e1.Snum
 );
-
--- Bị trùng các cặp lớp: ('IT3292E Database 20221', 'IT3210 C Programming 20221'), ('IT3210 C Programming 20221', 'IT3292E Database 20221')
-SELECT s.Snum, s.Name, c1.Name, c2.Name
-FROM Student s, Enrolled e1, Enrolled e2, Class c1, Class c2
-WHERE e1.Snum = e2.Snum AND e1.ClassName != e2.ClassName
-AND e1.ClassName = c1.Name AND e2.ClassName = c2.Name
-AND c1.StartTime = c2.StartTime
-AND s.Snum = e1.Snum
-GROUP BY s.Snum, s.Name, c1.Name, c2.Name
-ORDER BY s.snum;
 
 
 -- 6.  Find the faculty members (fid, name) who teach every weekday in the semester 20221. 
